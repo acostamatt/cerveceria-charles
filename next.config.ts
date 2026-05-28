@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   images: {
     // Allowed quality presets used across BeerCarousel and FoodBento
     qualities: [75, 80, 85, 90],
