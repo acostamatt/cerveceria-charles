@@ -2,6 +2,7 @@ import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import BeerCarousel from "@/components/BeerCarousel";
 import FoodBento from "@/components/FoodBento";
+import Footer from "@/components/Footer";
 
 export default function Home() {
   return (
@@ -11,7 +12,7 @@ export default function Home() {
         <Hero />
         <BeerCarousel />
         <FoodBento />
-        <footer id="footer" className="py-16 px-6 md:px-12 bg-[#08080a]" />
+        <Footer />
       </main>
     </>
   );

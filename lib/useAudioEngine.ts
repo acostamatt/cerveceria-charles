@@ -119,49 +119,17 @@ export function useAudioEngine(): AudioEngine {
   }, []);
 
   /** ─── BEER CAN POP SFX ─────────────────────────────────────────────
-   *  "Tshh-pop!" = short white noise burst (seal break) +
-   *  pitched click (pressure release) + quick reverb tail.
+   *  Playback of real audio file for maximum fidelity
    */
   const playCanPop = useCallback(() => {
-    const ctx = getCtx();
-    const now = ctx.currentTime;
-
-    // White noise burst — the "tsh" hiss
-    const hissBuffer = ctx.createBuffer(1, ctx.sampleRate * 0.18, ctx.sampleRate);
-    const hissData = hissBuffer.getChannelData(0);
-    for (let i = 0; i < hissData.length; i++) {
-      hissData[i] = Math.random() * 2 - 1;
+    try {
+      const audio = new Audio("/sounds/can_open.mp3");
+      audio.volume = 0.8;
+      audio.play().catch(e => console.warn("Audio play failed:", e));
+    } catch (e) {
+      console.warn("Audio API not supported", e);
     }
-    const hissSource = ctx.createBufferSource();
-    hissSource.buffer = hissBuffer;
-
-    const hissFilter = ctx.createBiquadFilter();
-    hissFilter.type = "highpass";
-    hissFilter.frequency.value = 3800;
-
-    const hissGain = ctx.createGain();
-    hissGain.gain.setValueAtTime(0.38, now);
-    hissGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
-
-    hissSource.connect(hissFilter).connect(hissGain).connect(ctx.destination);
-    hissSource.start(now);
-
-    // Short click — the "pop" transient
-    const clickOsc = ctx.createOscillator();
-    clickOsc.type = "sine";
-    clickOsc.frequency.setValueAtTime(320, now);
-    clickOsc.frequency.exponentialRampToValueAtTime(80, now + 0.06);
-
-    const clickGain = ctx.createGain();
-    clickGain.gain.setValueAtTime(0.55, now);
-    clickGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
-
-    clickOsc.connect(clickGain).connect(ctx.destination);
-    clickOsc.start(now);
-    clickOsc.stop(now + 0.1);
-
-    hissSource.stop(now + 0.2);
-  }, [getCtx]);
+  }, []);
 
   return { startAmbient, stopAmbient, playCanPop };
 }
