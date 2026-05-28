@@ -5,15 +5,6 @@ services:
       dockerfile: Dockerfile
     container_name: cerveceria-charles-web
     restart: unless-stopped
-    volumes:
-      # Montamos la base de datos de SQLite para que no se borre al reiniciar el contenedor
-      - ./payload.db:/app/payload.db
-      # Montamos la carpeta media para que las imágenes subidas persistan
-      - ./public/media:/app/public/media
-    env_file:
-      - .env
-    environment:
-      - NODE_ENV=production
     networks:
       - core_default
 
