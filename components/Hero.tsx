@@ -9,7 +9,6 @@
 
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
 
 export default function Hero() {
@@ -119,36 +118,31 @@ export default function Hero() {
             <span>ESTACIÓN CENTRAL — ROSARIO</span>
           </div>
         </div>
-        <div className="overflow-hidden">
-          <div className="reveal-item">
-            <span>COBRE LÍQUIDO &amp; ACERO BRUTO</span>
-          </div>
-        </div>
       </div>
 
       {/* ── Central headline block ───────────────────────────────────── */}
-      <div className="relative z-10 my-auto py-12 flex flex-col justify-center">
+      <div className="relative z-10 my-auto py-12 flex flex-col justify-center gap-2">
         {/* CRAFT BEER — masked reveal */}
         <div className="overflow-hidden leading-none select-none">
-          <h2 className="text-[12vw] md:text-[14vw] font-display text-brand-chalk uppercase tracking-tighter leading-none transition-all duration-1000">
+          <h2 className="text-[10vw] md:text-[11vw] font-display text-brand-chalk uppercase tracking-tighter leading-none transition-all duration-1000 text-left break-words">
             CRAFT BEER
           </h2>
         </div>
 
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 my-4">
-          <div className="w-full lg:w-4/12 overflow-hidden">
+        <div className="flex flex-col md:flex-row items-center justify-between w-full relative">
+          <div className="w-full md:w-5/12 overflow-hidden order-2 md:order-1 mt-6 md:mt-0">
             <div className="reveal-item">
               <p className="font-mono text-brand-copper text-xs tracking-widest mb-2">
                 // DIRECTAMENTE DE LA CANILLA
               </p>
-              <p className="text-brand-muted text-sm md:text-base leading-relaxed">
+              <p className="text-brand-muted text-sm md:text-base leading-relaxed max-w-sm">
                 Cervezas vivas sin filtrar, tiradas desde el tanque de maduración
                 a tu copa de hierro. Sin atajos, sin concesiones.
               </p>
             </div>
           </div>
-          <div className="overflow-hidden">
-            <div className="text-right text-brand-copper font-display text-7xl md:text-9xl tracking-tight leading-none select-none reveal-item lg:-translate-y-6">
+          <div className="overflow-hidden order-1 md:order-2 md:absolute md:left-1/2 md:-translate-x-1/2">
+            <div className="text-center text-brand-copper font-display text-6xl md:text-8xl tracking-tight leading-none select-none reveal-item">
               &amp;
             </div>
           </div>
@@ -156,7 +150,7 @@ export default function Hero() {
 
         {/* BURGERS — masked reveal */}
         <div className="overflow-hidden leading-none select-none flex justify-end">
-          <h2 className="text-[12vw] md:text-[14vw] font-display text-brand-copper uppercase tracking-tighter leading-none text-right transition-all duration-1000">
+          <h2 className="text-[10vw] md:text-[11vw] font-display text-brand-copper uppercase tracking-tighter leading-none text-right transition-all duration-1000 break-words">
             BURGERS
           </h2>
         </div>

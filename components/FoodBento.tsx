@@ -10,7 +10,6 @@
 
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
 import { food } from "@/lib/data";
 
@@ -164,7 +163,7 @@ export default function FoodBento() {
             }}
           />
           {/* Gradients */}
-          <div className="absolute inset-0 bg-gradient-to-t from-brand-black/90 via-brand-black/40 to-transparent z-10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent z-10" />
           <div className="absolute inset-0 bg-brand-copper/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 z-10" />
 
           {/* Text overlay */}
@@ -179,7 +178,7 @@ export default function FoodBento() {
                 <h4 className="text-4xl md:text-6xl font-display text-brand-chalk group-hover:text-brand-copper transition-colors leading-tight">
                   {primary.name}
                 </h4>
-                <span className="text-xl md:text-2xl font-mono text-brand-copper whitespace-nowrap shrink-0">
+                <span className="text-xl md:text-2xl font-mono text-brand-copper whitespace-nowrap shrink-0 bg-black/60 backdrop-blur-sm px-3 py-1 rounded-sm border border-brand-copper/20 drop-shadow-md">
                   {primary.price}
                 </span>
               </div>
@@ -216,7 +215,7 @@ export default function FoodBento() {
                 transformOrigin: "left center",
               }}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-brand-black/80 via-brand-black/20 to-transparent z-10" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent z-10" />
             <div className="absolute inset-0 bg-brand-copper/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 z-10" />
 
             <div className="relative z-30 h-full flex flex-col justify-end p-6">
@@ -230,7 +229,7 @@ export default function FoodBento() {
                   <h4 className="text-2xl md:text-3xl font-display text-brand-chalk group-hover:text-brand-copper transition-colors leading-tight">
                     {item.name}
                   </h4>
-                  <span className="text-lg font-mono text-brand-copper whitespace-nowrap shrink-0">
+                  <span className="text-lg font-mono text-brand-copper whitespace-nowrap shrink-0 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-sm border border-brand-copper/20 drop-shadow-md">
                     {item.price}
                   </span>
                 </div>
@@ -266,7 +265,7 @@ export default function FoodBento() {
                 transformOrigin: "left center",
               }}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-brand-black/80 via-brand-black/20 to-transparent z-10" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent z-10" />
             <div className="absolute inset-0 bg-brand-copper/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 z-10" />
 
             <div className="relative z-30 h-full flex flex-col justify-end p-6">
@@ -280,7 +279,7 @@ export default function FoodBento() {
                   <h4 className="text-2xl md:text-3xl font-display text-brand-chalk group-hover:text-brand-copper transition-colors leading-tight">
                     {item.name}
                   </h4>
-                  <span className="text-lg font-mono text-brand-copper whitespace-nowrap shrink-0">
+                  <span className="text-lg font-mono text-brand-copper whitespace-nowrap shrink-0 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-sm border border-brand-copper/20 drop-shadow-md">
                     {item.price}
                   </span>
                 </div>

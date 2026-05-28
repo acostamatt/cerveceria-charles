@@ -102,7 +102,7 @@ export default function Navbar() {
   return (
     <>
       {/* ── Fixed top bar ──────────────────────────────────────────────── */}
-      <header className="fixed top-0 left-0 w-full z-50 px-6 py-6 md:px-12 md:py-8 flex justify-between items-center mix-blend-difference">
+      <header className="fixed top-0 left-0 w-full z-50 px-6 py-4 md:px-12 md:py-6 flex justify-between items-center bg-brand-black/40 backdrop-blur-md border-b border-white/5 transition-all duration-300">
         <a
           href="#"
           className="text-3xl md:text-4xl font-display tracking-widest text-brand-chalk hover:text-brand-copper transition-colors duration-300 select-none"
