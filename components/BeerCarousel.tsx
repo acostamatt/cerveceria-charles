@@ -1,17 +1,15 @@
 "use client";
 
 /**
- * BeerCarousel.tsx — Pillar 1
- * • True horizontal scroll pinned to #taproom via ScrollTrigger (pin: true)
- * • Heavy-inertia scrub: 1.5 ("física de canilla")
- * • Card hover: subtle 3D tilt + copper glow
- * • Arrow buttons nudge the scroll position
- * • Real beer images from /images/beers/
+ * BeerCarousel.tsx — Pillar 1 (Refactored)
+ * • Native horizontal scrolling (overflow-x-auto) with CSS snap
+ * • Mouse drag-to-scroll functionality for desktop
+ * • Arrow buttons scroll the track left/right
+ * • Removed GSAP ScrollTrigger pin to allow native swiping sideways
  */
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
 import { beers } from "@/lib/data";
 
@@ -19,39 +17,20 @@ export default function BeerCarousel() {
   const sectionRef = useRef<HTMLElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<HTMLElement[]>([]);
-  const stRef = useRef<ScrollTrigger | null>(null);
 
-  // Populate cardRefs array without duplicates
-  const setCardRef = useCallback((el: HTMLElement | null, i: number) => {
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+
+  const setCardRef = (el: HTMLElement | null, i: number) => {
     if (el) cardRefs.current[i] = el;
-  }, []);
+  };
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      const section = sectionRef.current;
-      const track = trackRef.current;
-      if (!section || !track) return;
-
-      // Total distance to scroll horizontally
-      const getScrollAmount = () => -(track.scrollWidth - track.offsetWidth);
-
-      const st = ScrollTrigger.create({
-        trigger: section,
-        pin: true,
-        anticipatePin: 1,
-        start: "top top",
-        end: () => `+=${Math.abs(getScrollAmount()) + window.innerWidth * 0.3}`,
-        scrub: 1.5,
-        invalidateOnRefresh: true,
-        animation: gsap.to(track, {
-          x: getScrollAmount,
-          ease: "none",
-        }),
-      });
-
-      stRef.current = st;
-
-      // ── Card hover: 3D tilt + copper glow ───────────────────────────
+    // ── Card hover: 3D tilt + copper glow (Desktop Only) ────────────────
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
+    
+    if (!isMobile) {
       cardRefs.current.forEach((card) => {
         if (!card) return;
 
@@ -97,47 +76,60 @@ export default function BeerCarousel() {
         card.addEventListener("mousemove", handleMove);
         card.addEventListener("mouseleave", handleLeave);
 
-        // Store cleanup on element for revert
-        (card as HTMLElement & { _cleanup?: () => void })._cleanup = () => {
+        (card as any)._cleanup = () => {
           card.removeEventListener("mouseenter", handleEnter);
           card.removeEventListener("mousemove", handleMove);
           card.removeEventListener("mouseleave", handleLeave);
         };
       });
-    }, sectionRef);
+    }
 
     return () => {
-      // Clean up hover listeners
       cardRefs.current.forEach((card) => {
-        (card as HTMLElement & { _cleanup?: () => void })?._cleanup?.();
+        (card as any)?._cleanup?.();
       });
-      ctx.revert();
     };
   }, []);
 
-  // ── Arrow nudge ───────────────────────────────────────────────────────
-  const nudge = (dir: 1 | -1) => {
-    const st = stRef.current;
-    if (!st) return;
-    const nudgePx = window.innerWidth * 0.45;
-    const progress = st.progress;
-    const total = st.end - st.start;
-    gsap.to(window, {
-      scrollTo: { y: st.start + progress * total + dir * nudgePx },
-      duration: 0.8,
-      ease: "power2.inOut",
-    });
+  // ── Drag to scroll (Mouse) ────────────────────────────────────────────
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!trackRef.current) return;
+    setIsDragging(true);
+    setStartX(e.pageX - trackRef.current.offsetLeft);
+    setScrollLeft(trackRef.current.scrollLeft);
+  };
+
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !trackRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - trackRef.current.offsetLeft;
+    const walk = (x - startX) * 1.5; // Scroll-fast factor
+    trackRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  // ── Arrow controls ────────────────────────────────────────────────────
+  const scroll = (dir: 1 | -1) => {
+    if (!trackRef.current) return;
+    const scrollAmount = window.innerWidth > 768 ? 480 : 320;
+    trackRef.current.scrollBy({ left: scrollAmount * dir, behavior: "smooth" });
   };
 
   return (
     <section
       ref={sectionRef}
       id="taproom"
-      className="relative py-0 bg-[#08080a] border-b border-white/5 overflow-hidden will-change-transform"
-      style={{ height: "100vh" }}
+      className="relative py-24 bg-[#08080a] border-b border-white/5 overflow-hidden"
     >
-      {/* ── Section header (stays pinned at top while carousel scrolls) ── */}
-      <div className="px-6 md:px-12 pt-20 pb-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+      {/* ── Section header ── */}
+      <div className="px-6 md:px-12 mb-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
           <span className="text-xs font-mono text-brand-copper uppercase tracking-widest">
             // COBRE EN LAS VENAS
@@ -152,91 +144,90 @@ export default function BeerCarousel() {
           </p>
           <p className="text-brand-muted text-sm leading-relaxed">
             Nuestras cervezas se conservan en cámara hiperbárica bajo atmósfera
-            de nitrógeno. Tira para desplazarte por las variedades del día.
+            de nitrógeno. Desliza para explorar las variedades del día.
           </p>
         </div>
       </div>
 
       {/* ── Arrow controls ───────────────────────────────────────────── */}
-      <div className="flex justify-end gap-2 px-6 md:px-12 mb-4">
+      <div className="flex justify-end gap-2 px-6 md:px-12 mb-6">
         <button
-          onClick={() => nudge(-1)}
-          className="p-2 border border-white/10 hover:border-brand-copper/50 hover:text-brand-copper transition-all text-xs font-mono"
+          onClick={() => scroll(-1)}
+          className="p-3 border border-white/10 hover:border-brand-copper hover:text-brand-copper transition-all text-sm font-mono bg-[#08080a] z-30 relative"
           aria-label="Anterior cerveza"
         >
           [&larr;]
         </button>
         <button
-          onClick={() => nudge(1)}
-          className="p-2 border border-white/10 hover:border-brand-copper/50 hover:text-brand-copper transition-all text-xs font-mono"
+          onClick={() => scroll(1)}
+          className="p-3 border border-white/10 hover:border-brand-copper hover:text-brand-copper transition-all text-sm font-mono bg-[#08080a] z-30 relative"
           aria-label="Siguiente cerveza"
         >
           [&rarr;]
         </button>
       </div>
 
-      {/* ── Horizontal track (GSAP moves this) ───────────────────────── */}
-      <div className="px-6 md:px-12 overflow-hidden">
+      {/* ── Horizontal native scroll track ───────────────────────────── */}
+      <div className="relative w-full">
         <div
           ref={trackRef}
-          className="gsap-horizontal-section flex gap-6 md:gap-8 w-max pb-8"
+          className={`flex gap-6 md:gap-8 px-6 md:px-12 overflow-x-auto snap-x snap-mandatory pb-12 hide-scrollbar ${
+            isDragging ? "cursor-grabbing" : "cursor-grab"
+          }`}
+          onMouseDown={handleMouseDown}
+          onMouseLeave={handleMouseLeave}
+          onMouseUp={handleMouseUp}
+          onMouseMove={handleMouseMove}
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {beers.map((beer, index) => (
             <article
               key={beer.id}
               ref={(el) => setCardRef(el, index)}
-              className="w-[80vw] sm:w-[440px] shrink-0 bg-brand-surface border border-white/5 hover:border-brand-copper/40 transition-colors duration-500 flex flex-col justify-between relative group overflow-hidden"
+              className="w-[85vw] sm:w-[440px] shrink-0 snap-center sm:snap-start bg-brand-surface border border-white/5 hover:border-brand-copper/40 transition-colors duration-500 flex flex-col justify-between relative group overflow-hidden"
               style={{ transformStyle: "preserve-3d" }}
             >
-              {/* Grid ref label */}
-              <div className="absolute top-0 right-0 p-4 font-mono text-[10px] text-white/20 select-none z-10">
+              <div className="absolute top-0 right-0 p-4 font-mono text-[10px] text-white/20 select-none z-10 pointer-events-none">
                 GRIDREF{String(index + 1).padStart(2, "0")}
               </div>
 
-              {/* Copper radial hover glow */}
               <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(217,119,6,0.07)_0%,transparent_70%)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-10" />
 
-              {/* ── Beer image ─────────────────────────────────────── */}
-              <div className="relative w-full h-52 overflow-hidden shrink-0">
+              <div className="relative w-full h-56 overflow-hidden shrink-0 pointer-events-none">
                 <Image
                   src={beer.image}
-                  alt={`Cerveza ${beer.name} — Cervecería Charles`}
+                  alt={`Cerveza ${beer.name}`}
                   fill
                   quality={80}
-                  className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
-                  sizes="(max-width: 640px) 80vw, 440px"
-                  // Fallback gradient if image missing
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                  }}
+                  className="object-cover object-center transition-transform duration-700 group-hover:scale-105 pointer-events-none"
+                  sizes="(max-width: 640px) 85vw, 440px"
+                  draggable={false}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-brand-surface via-brand-surface/30 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-brand-surface via-brand-surface/30 to-transparent pointer-events-none" />
               </div>
 
-              {/* ── Card body ─────────────────────────────────────── */}
               <div className="p-8 flex flex-col flex-1 justify-between">
                 <div>
-                  <span className="text-xs font-mono text-brand-copper tracking-widest">
+                  <span className="text-xs font-mono text-brand-copper tracking-widest pointer-events-none">
                     // ON TAP {String(index + 1).padStart(2, "0")}
                   </span>
-                  <div className="flex justify-between items-baseline mt-4">
+                  <div className="flex justify-between items-baseline mt-4 pointer-events-none">
                     <h4 className="text-4xl md:text-5xl font-display text-brand-chalk group-hover:text-brand-copper transition-colors">
                       {beer.name}
                     </h4>
                     {beer.tapNumber && (
-                      <span className="font-mono text-brand-copper text-lg">
+                      <span className="font-mono text-brand-copper text-lg pointer-events-none">
                         Nº {beer.tapNumber}
                       </span>
                     )}
                   </div>
-                  <p className="text-brand-muted text-sm mt-3 leading-relaxed font-sans max-w-sm">
+                  <p className="text-brand-muted text-sm mt-3 leading-relaxed font-sans max-w-sm pointer-events-none">
                     {beer.description}
                   </p>
                 </div>
 
-                {/* Stats + CTA */}
                 <div className="mt-8 pt-6 border-t border-white/5 space-y-4">
-                  <div className="grid grid-cols-3 text-xs font-mono">
+                  <div className="grid grid-cols-3 text-xs font-mono pointer-events-none">
                     <div>
                       <span className="text-brand-muted block text-[10px]">ALC</span>
                       <span className="text-brand-chalk font-semibold text-sm">{beer.abv}</span>
@@ -252,8 +243,8 @@ export default function BeerCarousel() {
                   </div>
 
                   <div className="flex justify-between items-end pt-2">
-                    <span className="text-xl font-mono text-brand-chalk">{beer.price ?? "$4.200"}</span>
-                    <button className="order-beer-btn px-4 py-2 bg-brand-copper/10 hover:bg-brand-copper text-brand-copper hover:text-brand-black font-mono text-xs uppercase tracking-widest transition-all duration-300 border border-brand-copper/30 hover:border-brand-copper">
+                    <span className="text-xl font-mono text-brand-chalk pointer-events-none">{beer.price ?? "$4.200"}</span>
+                    <button className="order-beer-btn px-4 py-2 bg-brand-copper/10 hover:bg-brand-copper text-brand-copper hover:text-brand-black font-mono text-xs uppercase tracking-widest transition-all duration-300 border border-brand-copper/30 hover:border-brand-copper relative z-20 cursor-pointer">
                       PEDIR CANILLA
                     </button>
                   </div>
@@ -262,10 +253,10 @@ export default function BeerCarousel() {
             </article>
           ))}
         </div>
-      </div>
 
-      {/* Scroll-hint fade gradient on the right edge */}
-      <div className="absolute right-0 top-0 h-full w-24 bg-gradient-to-l from-[#08080a] to-transparent pointer-events-none z-20" />
+        {/* Scroll-hint fade gradient on the right edge */}
+        <div className="absolute right-0 top-0 h-full w-12 md:w-24 bg-gradient-to-l from-[#08080a] to-transparent pointer-events-none z-20" />
+      </div>
     </section>
   );
 }
